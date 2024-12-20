@@ -29,6 +29,50 @@ services:
       - "9100:9100"
     networks:
       - monitoring
+  
+  postgresql:
+    image: postgres:15.4
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+      PGDATA: /data/postgres
+      TZ: Asia/Tehran
+    healthcheck:
+            test: ["CMD-SHELL", "pg_isready -d ${DATABASE_NAME} -U ${DATABASE_USERNAME}"]
+            interval: 5s
+            timeout: 5s
+            retries: 5
+    volumes:
+        - postgresql:/data/postgres
+    ports:
+        - "5432:5432"
+    restart: unless-stopped
+    networks:
+        - monitoring
+
+  postgresql-exporter:
+    image: prometheuscommunity/postgres-exporter
+    container_name: postgresql-exporter
+    ports:
+        - "9187:9187"
+    environment:
+        DATA_SOURCE_NAME: "postgres://${DATABASE_USERNAME}:${DATABASE_PASSWORD}@${DATABASE_HOST}/${DATABASE_NAME}?sslmode=disable"
+    depends_on:
+        prometheus:
+            condition: service_started
+        postgresql:
+            condition: service_healthy
+    restart: unless-stopped
+    networks:
+        - monitoring
+  
+volumes:
+  postgresql:
+  prometheus:
+  grafana:
+  postgresql-exporter:
 
 networks:
   monitoring:
