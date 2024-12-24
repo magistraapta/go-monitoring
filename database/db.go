@@ -1,22 +1,25 @@
 package database
 
 import (
+	"fmt"
 	"log"
 
-	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
-var DB *sqlx.DB
+func GetDb() *gorm.DB {
 
-func GetDb() (*sqlx.DB, error) {
+	db, err := gorm.Open(postgres.New(postgres.Config{
+		DSN:                  "user=postgres dbname=go-db sslmode=disable host=localhost port=5432, Timezone=Asia/Jakarta",
+		PreferSimpleProtocol: true,
+	}), &gorm.Config{})
 
-	db, err := sqlx.Connect("postgres", "user=postgres dbname=go-db sslmode=disable host=localhost port=5432")
 	if err != nil {
-		return nil, err
+		log.Fatalf("Error connect to database: %v", err)
 	}
 
-	DB = db
-	log.Println("Database connection established")
-	return db, nil
+	fmt.Println("Database Connect Successfully")
+	return db
 }
