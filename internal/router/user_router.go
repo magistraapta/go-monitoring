@@ -2,6 +2,7 @@ package router
 
 import (
 	"go-backend/internal/controller"
+	"go-backend/internal/metrics"
 	"go-backend/internal/repository"
 	service "go-backend/internal/services"
 
@@ -11,6 +12,8 @@ import (
 
 func SetupRouter(db *gorm.DB) *gin.Engine {
 	r := gin.Default()
+
+	r.GET("/metrics", gin.WrapH(metrics.MetricsHandler))
 
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
